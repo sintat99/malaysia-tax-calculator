@@ -173,24 +173,66 @@ html.dark .data-table tr:not(.active-bracket):not(.total-row):hover td { backgro
 
       <!-- Income + YA -->
       <div class="card p-6 card-accent">
-        <div class="flex gap-4 mb-4">
-          <div class="flex-1">
-            <label class="section-header">Annual Gross Income</label>
-            <div class="relative mt-1">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold" style="color:var(--txt3);">RM</span>
-              <input type="number" id="p1-income" value="450000" min="0" max="9999999" step="1000"
-                class="w-full pl-10 pr-4 py-3 border-2 rounded-lg text-lg font-bold" oninput="recalc()" />
-            </div>
-          </div>
+        <div class="flex items-center justify-between mb-4">
+          <span class="section-header mb-0">Employment Income</span>
           <div class="w-32">
-            <label class="section-header">Year of Assessment</label>
-            <select id="p1-ya" class="w-full border-2 rounded-lg px-3 py-3 font-semibold text-sm mt-1" onchange="recalc()">
+            <select id="p1-ya" class="w-full border-2 rounded-lg px-3 py-2 font-semibold text-sm" onchange="recalc()">
               <option value="2025">YA 2025</option>
               <option value="2024">YA 2024</option>
             </select>
           </div>
         </div>
-        <p class="text-xs" style="color:var(--txt3);">Total salary / director fees before any deductions</p>
+
+        <!-- Monthly salary -->
+        <div class="mb-4">
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-sm font-semibold">Monthly gross salary</label>
+            <button type="button" onclick="toggleInfo('info-monthly')" class="text-xs underline" style="color:var(--navy);">ⓘ what is this / where to get it</button>
+          </div>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold" style="color:var(--txt3);">RM</span>
+            <input type="number" id="p1-monthly-salary" value="37500" min="0" max="999999" step="500"
+              class="w-full pl-10 pr-4 py-3 border-2 rounded-lg text-lg font-bold" oninput="recalc()" />
+          </div>
+          <p class="text-xs mt-1" style="color:var(--txt3);">Before EPF/SOCSO/EIS/PCB deductions. Annual = monthly × 12.</p>
+          <div id="info-monthly" class="hidden mt-2 p-3 rounded-lg text-xs" style="background:var(--navy-l);color:var(--txt2);">
+            <strong>Where to find it:</strong> Your monthly payslip (gross salary before deductions). For directors, this is the salary drawn from the company. Do <em>not</em> include bonuses here — enter them separately below.
+          </div>
+        </div>
+
+        <!-- Annual bonus -->
+        <div class="mb-4">
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-sm font-semibold">Annual bonus</label>
+            <button type="button" onclick="toggleInfo('info-bonus')" class="text-xs underline" style="color:var(--navy);">ⓘ what is this / where to get it</button>
+          </div>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold" style="color:var(--txt3);">RM</span>
+            <input type="number" id="p1-bonus" value="0" min="0" max="9999999" step="500"
+              class="w-full pl-10 pr-4 py-3 border-2 rounded-lg text-base font-bold" oninput="recalc()" />
+          </div>
+          <p class="text-xs mt-1" style="color:var(--txt3);">Total bonus across the YA. Fully taxable — added to annual income.</p>
+          <div id="info-bonus" class="hidden mt-2 p-3 rounded-lg text-xs" style="background:var(--navy-l);color:var(--txt2);">
+            <strong>Where to find it:</strong> Annual performance bonus, festive bonus, or any one-off cash payment from your employer in this assessment year. Include all bonuses received Jan–Dec.
+          </div>
+        </div>
+
+        <!-- Other income -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="text-sm font-semibold">Other employment income</label>
+            <button type="button" onclick="toggleInfo('info-other')" class="text-xs underline" style="color:var(--navy);">ⓘ what is this / where to get it</button>
+          </div>
+          <div class="relative">
+            <span class="absolute left-3 top-1/2 -translate-y-1/2 text-sm font-semibold" style="color:var(--txt3);">RM</span>
+            <input type="number" id="p1-other-income" value="0" min="0" max="9999999" step="500"
+              class="w-full pl-10 pr-4 py-3 border-2 rounded-lg text-base font-bold" oninput="recalc()" />
+          </div>
+          <p class="text-xs mt-1" style="color:var(--txt3);">Commissions, allowances, gratuities &amp; benefits-in-kind. Exclude tax-exempt allowances.</p>
+          <div id="info-other" class="hidden mt-2 p-3 rounded-lg text-xs" style="background:var(--navy-l);color:var(--txt2);">
+            <strong>Taxable examples:</strong> Sales commission, transport allowance above RM6,000/yr, entertainment allowance, company car benefit (BIK). <strong>Tax-exempt (exclude):</strong> Meal allowance ≤RM5,000/yr, parking, childcare subsidy ≤RM3,000/yr.
+          </div>
+        </div>
       </div>
 
       <!-- Employment -->
@@ -210,22 +252,25 @@ html.dark .data-table tr:not(.active-bracket):not(.total-row):hover td { backgro
 
       <!-- EPF -->
       <div class="card p-6">
-        <label class="section-header">Employee EPF Contribution Rate</label>
-        <div class="flex flex-col gap-2 mt-1">
-          <label class="radio-option" id="epf-9-label">
-            <input type="radio" name="epf-rate" value="9" id="epf-9" onchange="updateRadioStyles('epf-rate');recalc()">
-            <span class="font-semibold text-sm">9% — Standard</span>
-          </label>
-          <label class="radio-option selected" id="epf-11-label">
-            <input type="radio" name="epf-rate" value="11" id="epf-11" checked onchange="updateRadioStyles('epf-rate');recalc()">
-            <span class="font-semibold text-sm">11% — Higher Voluntary</span>
-          </label>
-          <label class="radio-option" id="epf-custom-label">
-            <input type="radio" name="epf-rate" value="custom" id="epf-custom" onchange="updateRadioStyles('epf-rate');recalc()">
-            <span class="font-semibold text-sm">Custom %</span>
+        <div class="flex items-center justify-between mb-1">
+          <label class="section-header mb-0">EPF Contribution Rate</label>
+          <button type="button" onclick="toggleInfo('info-epf')" class="text-xs underline" style="color:var(--navy);">ⓘ what is this / where to get it</button>
+        </div>
+        <select id="p1-epf-rate" class="w-full border-2 rounded-lg px-3 py-3 font-semibold text-sm mt-2" onchange="toggleCustomEPF();recalc()">
+          <option value="11">Standard 11%</option>
+          <option value="9">Reduced 9%</option>
+          <option value="custom">Custom %</option>
+        </select>
+        <div id="epf-custom-wrap" class="hidden mt-2">
+          <div class="relative">
             <input type="number" id="epf-custom-val" value="11" min="0" max="20" step="0.5"
-              class="ml-2 w-20 border-2 rounded px-2 py-1 text-sm" oninput="recalc()" />
-          </label>
+              class="w-full border-2 rounded-lg px-3 py-2 text-sm font-bold" placeholder="Enter %" oninput="recalc()" />
+            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-sm font-semibold" style="color:var(--txt3);">%</span>
+          </div>
+        </div>
+        <p class="text-xs mt-2" style="color:var(--txt3);">Mandatory EPF → counts toward the RM 4,000 'EPF + approved retirement' relief automatically.</p>
+        <div id="info-epf" class="hidden mt-2 p-3 rounded-lg text-xs" style="background:var(--navy-l);color:var(--txt2);">
+          <strong>Standard:</strong> 11% for employees earning RM5,000+/month. <strong>Reduced 9%:</strong> Available by application to EPF. <strong>Where to confirm:</strong> Your monthly payslip EPF deduction ÷ gross salary.
         </div>
       </div>
     </div>
@@ -277,13 +322,50 @@ html.dark .data-table tr:not(.active-bracket):not(.total-row):hover td { backgro
         </div>
       </div>
 
-      <!-- Quick stats -->
-      <div class="card p-6" style="background:var(--navy-l);">
-        <div class="section-header">Quick Estimate</div>
-        <div class="space-y-3 mt-2">
-          <div class="flex justify-between"><span class="text-sm" style="color:var(--txt2);">Monthly Salary</span><span class="font-bold" id="p1-monthly">RM 37,500</span></div>
-          <div class="flex justify-between"><span class="text-sm" style="color:var(--txt2);">EPF (employee)</span><span class="font-bold" id="p1-epf">RM 4,000</span></div>
-          <div class="flex justify-between"><span class="text-sm" style="color:var(--txt2);">Top Tax Bracket</span><span class="font-bold" style="color:var(--amber);" id="p1-bracket">26%</span></div>
+      <!-- Bottom Line -->
+      <div class="card p-5" style="background:var(--navy-l);">
+        <div class="section-header">Bottom line</div>
+        <div class="grid grid-cols-2 gap-3 mt-2">
+          <div class="rounded-lg p-3" style="background:var(--card);">
+            <div class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:var(--txt3);">Total Income</div>
+            <div class="font-bold" style="color:var(--txt);" id="bl-income-annual">RM 0</div>
+            <div class="text-xs mt-0.5" style="color:var(--txt3);" id="bl-income-monthly">RM 0 / month</div>
+          </div>
+          <div class="rounded-lg p-3" style="background:var(--card);">
+            <div class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:var(--txt3);">Tax Payable</div>
+            <div class="font-bold" style="color:#f59e0b;" id="bl-tax-annual">RM 0</div>
+            <div class="text-xs mt-0.5" style="color:var(--txt3);" id="bl-tax-monthly">RM 0 PCB/month</div>
+          </div>
+          <div class="rounded-lg p-3" style="background:var(--card);">
+            <div class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:var(--txt3);">Take-Home</div>
+            <div class="font-bold" style="color:#10b981;" id="bl-takehome-annual">RM 0</div>
+            <div class="text-xs mt-0.5" style="color:var(--txt3);" id="bl-takehome-monthly">after tax+EPF+SOCSO/EIS</div>
+          </div>
+          <div class="rounded-lg p-3" style="background:var(--card);">
+            <div class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:var(--txt3);">Chargeable Income</div>
+            <div class="font-bold" style="color:var(--txt);" id="bl-chargeable">RM 0</div>
+            <div class="text-xs mt-0.5" style="color:var(--txt3);">after all reliefs</div>
+          </div>
+        </div>
+        <div class="mt-3 pt-3 flex justify-between items-center" style="border-top:1px solid var(--border);">
+          <span class="text-xs" style="color:var(--txt2);">Marginal rate</span>
+          <span class="font-bold text-sm" style="color:var(--amber);" id="p1-bracket">0%</span>
+        </div>
+        <div class="flex justify-between items-center mt-1">
+          <span class="text-xs" style="color:var(--txt2);">Effective rate</span>
+          <span class="font-bold text-sm" id="bl-eff-rate">0%</span>
+        </div>
+        <div class="flex justify-between items-center mt-1">
+          <span class="text-xs" style="color:var(--txt2);">EPF deduction (employee)</span>
+          <span class="font-bold text-sm" id="p1-epf">RM 0</span>
+        </div>
+      </div>
+
+      <!-- Monthly action plan -->
+      <div class="card p-5">
+        <div class="section-header">Monthly action plan</div>
+        <div id="action-plan-content" class="text-sm mt-2" style="color:var(--txt2);">
+          Enter your salary above to see a month-by-month breakdown and tax-saving tips here.
         </div>
       </div>
     </div>
@@ -917,11 +999,21 @@ function el(id){ return document.getElementById(id); }
 function setText(id,t){ const e=el(id); if(e) e.textContent=t; }
 
 function getEPFRate(){
-  const s=document.querySelector('input[name="epf-rate"]:checked');
-  if(!s) return 0.11;
-  return s.value==='custom'?(v('epf-custom-val')/100):(parseFloat(s.value)/100);
+  const sel=el('p1-epf-rate');
+  if(!sel) return 0.11;
+  return sel.value==='custom'?(v('epf-custom-val')/100):(parseFloat(sel.value)/100);
 }
-function getIncome(){ return v('p1-income'); }
+function getIncome(){
+  return (v('p1-monthly-salary')||0)*12 + (v('p1-bonus')||0) + (v('p1-other-income')||0);
+}
+function toggleInfo(id){
+  const e=el(id); if(e) e.classList.toggle('hidden');
+}
+function toggleCustomEPF(){
+  const sel=el('p1-epf-rate');
+  const wrap=el('epf-custom-wrap');
+  if(wrap) wrap.classList.toggle('hidden', sel?.value!=='custom');
+}
 function getChildren(){ return parseInt(el('p1-children')?.value)||0; }
 function getDisabledChildren(){ return parseInt(el('p1-disabled-children')?.value)||0; }
 function hasParents(){ return el('par-yes')?.checked; }
@@ -958,7 +1050,8 @@ let _charts = {donut:null, bar:null};
 function recalc(){
   const income=getIncome();
   const epfRate=getEPFRate();
-  const autoEPF=Math.min(Math.round(income*epfRate),4000);
+  const monthlySalary=v('p1-monthly-salary')||0;
+  const autoEPF=Math.min(Math.round(monthlySalary*12*epfRate),4000);
   const epfFld=el('relief-epf');
   if(epfFld && epfFld.getAttribute('data-auto')!==String(autoEPF)){
     epfFld.setAttribute('data-auto',autoEPF);
@@ -973,7 +1066,7 @@ function recalc(){
   const indRebate=chargeable<=35000?400:0;
   const totalRebates=Math.min(bracketTax,zakat+indRebate);
   const effRate=income>0?(finalTax/income*100):0;
-  const monthly=income/12;
+  const monthly=monthlySalary||income/12;
   const monthlyPCB=finalTax/12;
 
   // Disabled amounts
@@ -999,10 +1092,23 @@ function recalc(){
   setText('header-tax',fmt(finalTax));
   setText('ya-label','YA '+(el('p1-ya')?.value||'2025'));
 
-  // Page 1
-  setText('p1-monthly',fmt(monthly));
+  // Page 1 — bottom line
+  const annualEPF=income*epfRate;
+  const annualSOCSO=calcSOCSO(monthly)*12;
+  const annualEIS=calcEIS(monthly)*12;
+  const annualTakeHome=income-finalTax-annualEPF-annualSOCSO-annualEIS;
+  setText('bl-income-annual',fmt(income));
+  setText('bl-income-monthly',fmt(monthly)+' / month');
+  setText('bl-tax-annual',fmt(finalTax));
+  setText('bl-tax-monthly',fmt(finalTax/12)+' PCB/month');
+  setText('bl-takehome-annual',fmt(annualTakeHome));
+  setText('bl-takehome-monthly','after tax+EPF+SOCSO/EIS');
+  setText('bl-chargeable',fmt(chargeable));
+  setText('bl-eff-rate',pct(effRate));
   setText('p1-epf',fmt(autoEPF));
   setText('p1-bracket',pct(topRate*100,0));
+  // Action plan
+  renderActionPlan(monthly,finalTax,annualTakeHome,chargeable,income,epfRate);
 
   // Page 2 sticky
   setText('sticky-reliefs',fmt(totalReliefs));
@@ -1336,17 +1442,54 @@ function showTab(idx){
 }
 
 // ══════════════════════════════════════
+// ACTION PLAN
+// ══════════════════════════════════════
+function renderActionPlan(monthly, annualTax, annualTakeHome, chargeable, income, epfRate){
+  const c=el('action-plan-content'); if(!c||!income) return;
+  const pcb=annualTax/12;
+  const epfAmt=monthly*epfRate;
+  const socso=calcSOCSO(monthly);
+  const eis=calcEIS(monthly);
+  const netMonthly=monthly-epfAmt-socso-eis-pcb;
+  const tips=[];
+  if(chargeable>35000 && getRelief('life')<3000) tips.push('Top up life/takaful insurance to the RM 3,000 cap — saves up to RM '+Math.round((3000-getRelief('life'))*0.1).toLocaleString('en-MY'));
+  if(getRelief('prs')<3000) tips.push('Contribute to a PRS fund (up to RM 3,000 relief) for additional retirement savings');
+  if(getRelief('lifestyle')<2500) tips.push('Claim lifestyle relief — books, gadgets, internet subscription up to RM 2,500');
+  if(getRelief('sports')<1000) tips.push('Sports equipment & gym memberships qualify for up to RM 1,000 relief');
+  const html=`
+    <div class="grid grid-cols-2 gap-2 mb-3">
+      <div class="rounded-lg p-3 text-center" style="background:var(--navy-l);">
+        <div class="text-xs" style="color:var(--txt3);">Monthly take-home</div>
+        <div class="font-bold text-base mt-1">${fmt(netMonthly)}</div>
+      </div>
+      <div class="rounded-lg p-3 text-center" style="background:var(--navy-l);">
+        <div class="text-xs" style="color:var(--txt3);">Monthly PCB</div>
+        <div class="font-bold text-base mt-1" style="color:#f59e0b;">${fmt(pcb)}</div>
+      </div>
+    </div>
+    <div class="text-xs font-semibold uppercase tracking-wide mb-2" style="color:var(--txt3);">Monthly payslip deductions</div>
+    <div class="space-y-1 text-xs mb-3">
+      <div class="flex justify-between"><span style="color:var(--txt2);">EPF (${Math.round(epfRate*100)}%)</span><span>− ${fmt(epfAmt)}</span></div>
+      <div class="flex justify-between"><span style="color:var(--txt2);">SOCSO (0.5%, cap RM4k)</span><span>− ${fmt(socso)}</span></div>
+      <div class="flex justify-between"><span style="color:var(--txt2);">EIS (0.2%, cap RM4k)</span><span>− ${fmt(eis)}</span></div>
+      <div class="flex justify-between font-semibold" style="border-top:1px solid var(--border);padding-top:4px;margin-top:4px;"><span>PCB (monthly tax)</span><span style="color:#f59e0b;">− ${fmt(pcb)}</span></div>
+    </div>
+    ${tips.length?`<div class="text-xs font-semibold uppercase tracking-wide mb-1" style="color:var(--txt3);">Unused relief headroom</div><ul class="space-y-1">${tips.map(t=>`<li class="text-xs flex gap-1.5"><span style="color:#10b981;">▸</span><span style="color:var(--txt2);">${t}</span></li>`).join('')}</ul>`:'<div class="text-xs" style="color:#10b981;">✅ All key reliefs maximised</div>'}
+  `;
+  c.innerHTML=html;
+}
+
+// ══════════════════════════════════════
 // SHARE / URL STATE
 // ══════════════════════════════════════
 function getStateObj(){
-  const epfSel=document.querySelector('input[name="epf-rate"]:checked');
   return {
-    inc:v('p1-income'), ya:el('p1-ya')?.value,
+    ms:v('p1-monthly-salary'), bo:v('p1-bonus'), oi:v('p1-other-income'), ya:el('p1-ya')?.value,
     emp:document.querySelector('input[name="emp-type"]:checked')?.value,
     mar:document.querySelector('input[name="marital"]:checked')?.value,
     ch:el('p1-children')?.value, dch:el('p1-disabled-children')?.value,
     par:document.querySelector('input[name="parents"]:checked')?.value,
-    epf:epfSel?.value, epfc:v('epf-custom-val'),
+    epf:el('p1-epf-rate')?.value, epfc:v('epf-custom-val'),
     re:['epf','life','prs','medins','sspn','childcare','tertiary','medical','parental','lifestyle','sports','green','spouse'].map(k=>v('relief-'+k)).join(','),
     dself:el('relief-disabled-self-chk')?.checked?1:0,
     dsp:el('relief-disabled-spouse-chk')?.checked?1:0,
@@ -1367,11 +1510,12 @@ function saveState(){
 function loadState(s){
   if(!s)return;
   const setV=(id,val)=>{ const e=el(id); if(e&&val!==undefined)e.value=val; };
-  setV('p1-income',s.inc); if(el('p1-ya')&&s.ya)el('p1-ya').value=s.ya;
+  setV('p1-monthly-salary',s.ms); setV('p1-bonus',s.bo); setV('p1-other-income',s.oi);
+  if(el('p1-ya')&&s.ya)el('p1-ya').value=s.ya;
   if(s.emp) document.querySelectorAll('input[name="emp-type"]').forEach(i=>i.checked=i.value===s.emp);
   if(s.mar) document.querySelectorAll('input[name="marital"]').forEach(i=>i.checked=i.value===s.mar);
   if(s.par) document.querySelectorAll('input[name="parents"]').forEach(i=>i.checked=i.value===s.par);
-  if(s.epf) document.querySelectorAll('input[name="epf-rate"]').forEach(i=>i.checked=i.value===s.epf);
+  if(s.epf&&el('p1-epf-rate')){ el('p1-epf-rate').value=s.epf; toggleCustomEPF(); }
   setV('epf-custom-val',s.epfc); setV('p1-children',s.ch); setV('p1-disabled-children',s.dch);
   if(s.re){ const vals=s.re.split(','); ['epf','life','prs','medins','sspn','childcare','tertiary','medical','parental','lifestyle','sports','green','spouse'].forEach((k,i)=>setV('relief-'+k,vals[i])); }
   if(el('relief-disabled-self-chk')) el('relief-disabled-self-chk').checked=s.dself=='1'||s.dself===1;
