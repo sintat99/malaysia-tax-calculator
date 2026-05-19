@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Malaysia Tax Optimization Calculator</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          navy: { 50:'#f0f4f9', 100:'#d9e4f0', 200:'#b3c9e1', 300:'#7ea3c8', 400:'#4d7daf', 500:'#2d5f91', 600:'#1e4a78', 700:'#1e3a5f', 800:'#17304f', 900:'#112440' },
+          amber: { 50:'#fffbeb', 100:'#fef3c7', 200:'#fde68a', 300:'#fcd34d', 400:'#fbbf24', 500:'#f59e0b', 600:'#d97706', 700:'#b45309', 800:'#92400e', 900:'#78350f' },
+        }
+      }
+    }
+  }
+</script>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; background: #f8fafc; }
+
+  /* Tab nav */
+  .tab-btn { transition: all 0.2s ease; }
+  .tab-btn.active { background: #1e3a5f; color: #fff; }
+  .tab-btn:not(.active):hover { background: #d9e4f0; }
+
+  /* Cards */
+  .card { background: #fff; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04); }
+  .card-accent { border-left: 4px solid #d97706; }
+
+  /* Inputs */
+  input[type="number"], input[type="range"], select {
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  input[type="number"]:focus, select:focus {
+    border-color: #1e3a5f !important;
+    box-shadow: 0 0 0 3px rgba(30,58,95,0.12);
+  }
+
+  /* Range slider */
+  input[type="range"] { -webkit-appearance: none; appearance: none; height: 6px; border-radius: 3px; background: #d9e4f0; cursor: pointer; }
+  input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%; background: #1e3a5f; cursor: pointer; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+  input[type="range"]::-moz-range-thumb { width: 20px; height: 20px; border-radius: 50%; background: #1e3a5f; cursor: pointer; border: none; }
+
+  /* Badge */
+  .cap-badge { font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 20px; background: #d9e4f0; color: #1e3a5f; white-space: nowrap; }
+  .saving-badge { font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 20px; background: #fef3c7; color: #b45309; white-space: nowrap; }
+
+  /* Table */
+  .data-table th { background: #1e3a5f; color: #fff; font-weight: 600; font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.04em; padding: 10px 14px; }
+  .data-table td { padding: 9px 14px; font-size: 0.88rem; border-bottom: 1px solid #f0f4f9; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr.active-bracket td { background: #fffbeb; color: #92400e; font-weight: 600; }
+  .data-table tr.total-row td { background: #f0f4f9; font-weight: 700; font-size: 0.92rem; color: #1e3a5f; border-top: 2px solid #b3c9e1; }
+  .data-table tr:not(.active-bracket):not(.total-row):hover td { background: #f8fafc; }
+
+  /* Sticky footer panel */
+  .sticky-panel { position: sticky; bottom: 0; background: #1e3a5f; color: #fff; padding: 16px 24px; border-top: 3px solid #d97706; z-index: 50; }
+
+  /* Summary stat card */
+  .stat-card { border-radius: 12px; padding: 20px; text-align: center; }
+
+  /* PCB badge */
+  .pcb-month { font-size: 0.8rem; color: #64748b; }
+
+  /* Section header */
+  .section-header { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #94a3b8; margin-bottom: 10px; }
+
+  /* Bracket zone pill */
+  .zone-pill { display: inline-block; padding: 3px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; }
+
+  /* Radio/Checkbox custom */
+  .radio-option { display: flex; align-items: center; gap: 8px; padding: 10px 16px; border: 2px solid #e2e8f0; border-radius: 8px; cursor: pointer; transition: all 0.15s; user-select: none; }
+  .radio-option:hover { border-color: #7ea3c8; }
+  .radio-option.selected { border-color: #1e3a5f; background: #f0f4f9; }
+  .radio-option input { accent-color: #1e3a5f; }
+
+  /* Comparison table */
+  .comp-table th { background: #1e3a5f; color: #fff; padding: 10px 16px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.03em; text-transform: uppercase; }
+  .comp-table td { padding: 10px 16px; font-size: 0.88rem; border-bottom: 1px solid #f0f4f9; }
+  .comp-table tr.highlight-row td { background: #fffbeb; font-weight: 700; color: #92400e; }
+  .comp-table tr.subtotal-row td { background: #f0f4f9; font-weight: 600; color: #1e3a5f; }
+
+  /* Page transitions */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  /* Savings box */
+  .savings-box { background: linear-gradient(135deg, #1e3a5f 0%, #1e4a78 100%); border-radius: 12px; padding: 28px; text-align: center; border: 2px solid #d97706; }
+</style>
+</head>
+<body class="min-h-screen">
+
+<!-- Header -->
+<header style="background: #1e3a5f;" class="text-white shadow-lg">
+  <div class="max-w-6xl mx-auto px-4 py-5 flex items-center justify-between flex-wrap gap-3">
+    <div>
+      <div class="flex items-center gap-3">
+        <div style="background: #d97706;" class="w-8 h-8 rounded-lg flex items-center justify-center text-white font-black text-sm">MY</div>
+        <div>
+          <h1 class="text-xl font-bold tracking-tight">Malaysia Tax Optimizer</h1>
+          <p class="text-xs" style="color: #7ea3c8;">Personal &amp; Corporate Tax Planning Calculator · YA 2024</p>
+        </div>
+      </div>
+    </div>
+    <div class="text-right">
+      <div class="text-xs" style="color: #7ea3c8;">Annual Tax Estimate</div>
+      <div class="text-2xl font-bold" style="color: #fbbf24;" id="header-tax">RM 0</div>
+    </div>
+  </div>
+</header>
+
+<!-- Tab Navigation -->
+<div style="background: #fff; border-bottom: 2px solid #e2e8f0;" class="sticky top-0 z-40 shadow-sm">
+  <div class="max-w-6xl mx-auto px-4">
+    <nav class="flex gap-1 py-2 overflow-x-auto">
+      <button class="tab-btn active px-5 py-2.5 rounded-lg font-semibold text-sm whitespace-nowrap" onclick="showTab(0)" id="tab-0">
+        <span class="mr-1.5">①</span> Profile
+      </button>
+      <button class="tab-btn px-5 py-2.5 rounded-lg font-semibold text-sm whitespace-nowrap" style="color:#475569" onclick="showTab(1)" id="tab-1">
+        <span class="mr-1.5">②</span> Reliefs
+      </button>
+      <button class="tab-btn px-5 py-2.5 rounded-lg font-semibold text-sm whitespace-nowrap" style="color:#475569" onclick="showTab(2)" id="tab-2">
+        <span class="mr-1.5">③</span> Tax &amp; PCB Summary
+      </button>
+      <button class="tab-btn px-5 py-2.5 rounded-lg font-semibold text-sm whitespace-nowrap" style="color:#475569" onclick="showTab(3)" id="tab-3">
+        <span class="mr-1.5">④</span> Corporate Optimizer
+      </button>
+    </nav>
+  </div>
+</div>
+
+<main class="max-w-6xl mx-auto px-4 py-8">
+
+<!-- ===================== PAGE 1: PROFILE ===================== -->
+<div class="page active" id="page-0">
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold" style="color:#1e3a5f;">Profile Setup</h2>
+    <p class="text-sm text-slate-500 mt-1">Enter your income details to begin the tax calculation.</p>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+    <!-- Left column -->
+    <div class="space-y-5">
+
+      <!-- Annual Income -->
+      <div class="card p-6 card-accent">
+        <label class="section-header">Annual Gross Income</label>
+        <div class="relative mt-1">
+          <span class="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-semibold text-sm">RM</span>
+          <input type="number" id="p1-income" value="450000" min="0" max="9999999" step="1000"
+            class="w-full pl-10 pr-4 py-3 border-2 border-slate-200 rounded-lg text-lg font-bold text-slate-800"
+            oninput="recalc()" />
+        </div>
+        <p class="text-xs text-slate-400 mt-2">Enter your total annual salary / director fees before deductions</p>
+      </div>
+
+      <!-- Employment Type -->
+      <div class="card p-6">
+        <label class="section-header">Employment Type</label>
+        <div class="flex flex-col gap-2 mt-1">
+          <label class="radio-option selected" id="emp-employee-label">
+            <input type="radio" name="emp-type" value="employee" id="emp-employee" checked onchange="updateRadioStyles('emp-type');recalc()">
+            <div>
+              <div class="font-semibold text-sm text-slate-800">Employee Only</div>
+              <div class="text-xs text-slate-500">Salary earner under an employer</div>
+            </div>
+          </label>
+          <label class="radio-option" id="emp-director-label">
+            <input type="radio" name="emp-type" value="director" id="emp-director" onchange="updateRadioStyles('emp-type');recalc()">
+            <div>
+              <div class="font-semibold text-sm text-slate-800">Sdn Bhd Director / Owner</div>
+              <div class="text-xs text-slate-500">Company owner drawing salary + dividends</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- EPF Rate -->
+      <div class="card p-6">
+        <label class="section-header">Employee EPF Contribution Rate</label>
+        <div class="flex flex-col gap-2 mt-1">
+          <label class="radio-option" id="epf-9-label">
+            <input type="radio" name="epf-rate" value="9" id="epf-9" onchange="updateRadioStyles('epf-rate');recalc()">
+            <span class="font-semibold text-sm text-slate-800">9% — Standard Rate</span>
+          </label>
+          <label class="radio-option selected" id="epf-11-label">
+            <input type="radio" name="epf-rate" value="11" id="epf-11" checked onchange="updateRadioStyles('epf-rate');recalc()">
+            <span class="font-semibold text-sm text-slate-800">11% — Higher Voluntary Rate</span>
+          </label>
+          <label class="radio-option" id="epf-custom-label">
+            <input type="radio" name="epf-rate" value="custom" id="epf-custom" onchange="updateRadioStyles('epf-rate');recalc()">
+            <span class="font-semibold text-sm text-slate-800">Custom %</span>
+            <input type="number" id="epf-custom-val" value="11" min="0" max="20" step="0.5"
+              class="ml-2 w-20 border-2 border-slate-200 rounded px-2 py-1 text-sm"
+              oninput="recalc()" placeholder="%" />
+          </label>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right column -->
+    <div class="space-y-5">
+
+      <!-- Marital Status -->
+      <div class="card p-6">
+        <label class="section-header">Marital Status</label>
+        <div class="flex gap-2 mt-1">
+          <label class="radio-option flex-1 selected" id="ms-single-label">
+            <input type="radio" name="marital" value="single" id="ms-single" checked onchange="updateRadioStyles('marital');recalc()">
+            <span class="font-semibold text-sm text-slate-800">Single</span>
+          </label>
+          <label class="radio-option flex-1" id="ms-married-label">
+            <input type="radio" name="marital" value="married" id="ms-married" onchange="updateRadioStyles('marital');recalc()">
+            <span class="font-semibold text-sm text-slate-800">Married</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Children -->
+      <div class="card p-6">
+        <label class="section-header">Number of Children</label>
+        <div class="flex items-center gap-3 mt-1">
+          <input type="number" id="p1-children" value="0" min="0" max="10"
+            class="w-24 border-2 border-slate-200 rounded-lg px-3 py-2 text-lg font-bold text-center"
+            oninput="recalc();updateChildrenUI()" />
+          <span class="text-sm text-slate-500">children (eligible for SSPN, childcare &amp; education reliefs)</span>
+        </div>
+      </div>
+
+      <!-- Elderly Parents -->
+      <div class="card p-6">
+        <label class="section-header">Elderly Parent Support</label>
+        <div class="flex flex-col gap-2 mt-1">
+          <label class="radio-option selected" id="par-no-label">
+            <input type="radio" name="parents" value="no" id="par-no" checked onchange="updateRadioStyles('parents');recalc();updateParentsUI()">
+            <span class="font-semibold text-sm text-slate-800">No elderly parents to support</span>
+          </label>
+          <label class="radio-option" id="par-yes-label">
+            <input type="radio" name="parents" value="yes" id="par-yes" onchange="updateRadioStyles('parents');recalc();updateParentsUI()">
+            <span class="font-semibold text-sm text-slate-800">Yes — I support elderly parents</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Quick Stats -->
+      <div class="card p-6" style="background: #f0f4f9;">
+        <div class="section-header">Quick Estimate</div>
+        <div class="space-y-3 mt-2">
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-slate-600">Monthly Salary</span>
+            <span class="font-bold text-slate-800" id="p1-monthly">RM 37,500</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-slate-600">EPF Deduction (employee)</span>
+            <span class="font-bold text-slate-800" id="p1-epf">RM 4,000</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-sm text-slate-600">Estimated Tax Bracket</span>
+            <span class="font-bold" style="color:#d97706" id="p1-bracket">26%</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="mt-8 flex justify-end">
+    <button onclick="showTab(1)" class="px-8 py-3 rounded-xl font-bold text-white text-base shadow-lg transition-all hover:shadow-xl hover:scale-105"
+      style="background: #1e3a5f;">
+      Next — Enter Reliefs →
+    </button>
+  </div>
+</div>
+
+<!-- ===================== PAGE 2: RELIEFS ===================== -->
+<div class="page" id="page-1">
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold" style="color:#1e3a5f;">Personal Tax Reliefs</h2>
+    <p class="text-sm text-slate-500 mt-1">Enter your relief amounts. Each input is capped at the LHDN maximum. Tax saving shown at your marginal rate.</p>
+  </div>
+
+  <div class="space-y-3" id="reliefs-container">
+
+    <!-- EPF -->
+    <div class="card p-5 relief-item" data-key="epf">
+      <div class="flex flex-wrap items-start gap-3 justify-between">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-slate-800 text-sm">EPF Contributions</span>
+            <span class="cap-badge">Max RM 4,000</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Auto-computed from income × EPF rate. Editable.</p>
+        </div>
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <span class="saving-badge" id="saving-epf">Saves RM 0</span>
+          <div class="relative">
+            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-semibold">RM</span>
+            <input type="number" id="relief-epf" value="4000" min="0" max="4000" step="100"
+              class="w-28 pl-8 pr-2 py-2 border-2 border-slate-200 rounded-lg text-sm font-bold text-right"
+              oninput="capRelief(this,4000);recalc()" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Life Insurance -->
+    <div class="card p-5 relief-item" data-key="life">
+      <div class="flex flex-wrap items-start gap-3 justify-between">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-slate-800 text-sm">Life Insurance / Takaful</span>
+            <span class="cap-badge">Max RM 3,000</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Premium paid for life insurance or family takaful</p>
+        </div>
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <span class="saving-badge" id="saving-life">Saves RM 0</span>
+          <div class="relative">
+            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-semibold">RM</span>
+            <input type="number" id="relief-life" value="0" min="0" max="3000" step="100"
+              class="w-28 pl-8 pr-2 py-2 border-2 border-slate-200 rounded-lg text-sm font-bold text-right"
+              oninput="capRelief(this,3000);recalc()" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PRS -->
+    <div class="card p-5 relief-item" data-key="prs">
+      <div class="flex flex-wrap items-start gap-3 justify-between">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-slate-800 text-sm">Private Retirement Scheme (PRS)</span>
+            <span class="cap-badge">Max RM 3,000</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Contributions to approved PRS funds</p>
+        </div>
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <span class="saving-badge" id="saving-prs">Saves RM 0</span>
+          <div class="relative">
+            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-semibold">RM</span>
+            <input type="number" id="relief-prs" value="0" min="0" max="3000" step="100"
+              class="w-28 pl-8 pr-2 py-2 border-2 border-slate-200 rounded-lg text-sm font-bold text-right"
+              oninput="capRelief(this,3000);recalc()" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Medical Insurance -->
+    <div class="card p-5 relief-item" data-key="medins">
+      <div class="flex flex-wrap items-start gap-3 justify-between">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-slate-800 text-sm">Medical &amp; Education Insurance</span>
+            <span class="cap-badge">Max RM 4,000</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Premium for medical / critical illness / education insurance</p>
+        </div>
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <span class="saving-badge" id="saving-medins">Saves RM 0</span>
+          <div class="relative">
+            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-semibold">RM</span>
+            <input type="number" id="relief-medins" value="0" min="0" max="4000" step="100"
+              class="w-28 pl-8 pr-2 py-2 border-2 border-slate-200 rounded-lg text-sm font-bold text-right"
+              oninput="capRelief(this,4000);recalc()" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SSPN — children only -->
+    <div class="card p-5 relief-item children-only hidden" data-key="sspn">
+      <div class="flex flex-wrap items-start gap-3 justify-between">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-slate-800 text-sm">SSPN Net Savings</span>
+            <span class="cap-badge">Max RM 8,000</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Net deposits into SSPN-i / SSPN Prime for children's education</p>
+        </div>
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <span class="saving-badge" id="saving-sspn">Saves RM 0</span>
+          <div class="relative">
+            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-semibold">RM</span>
+            <input type="number" id="relief-sspn" value="0" min="0" max="8000" step="100"
+              class="w-28 pl-8 pr-2 py-2 border-2 border-slate-200 rounded-lg text-sm font-bold text-right"
+              oninput="capRelief(this,8000);recalc()" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Childcare — children only -->
+    <div class="card p-5 relief-item children-only hidden" data-key="childcare">
+      <div class="flex flex-wrap items-start gap-3 justify-between">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-slate-800 text-sm">Childcare / Daycare Fees</span>
+            <span class="cap-badge">Max RM 3,000</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Registered childcare centre fees for children aged ≤6</p>
+        </div>
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <span class="saving-badge" id="saving-childcare">Saves RM 0</span>
+          <div class="relative">
+            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-semibold">RM</span>
+            <input type="number" id="relief-childcare" value="0" min="0" max="3000" step="100"
+              class="w-28 pl-8 pr-2 py-2 border-2 border-slate-200 rounded-lg text-sm font-bold text-right"
+              oninput="capRelief(this,3000);recalc()" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tertiary Education — children only -->
+    <div class="card p-5 relief-item children-only hidden" data-key="tertiary">
+      <div class="flex flex-wrap items-start gap-3 justify-between">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-slate-800 text-sm">Tertiary Education (per child)</span>
+            <span class="cap-badge" id="tertiary-cap-badge">Max RM 0</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">RM 8,000 per child for tertiary / diploma / degree study</p>
+        </div>
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <span class="saving-badge" id="saving-tertiary">Saves RM 0</span>
+          <div class="relative">
+            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-semibold">RM</span>
+            <input type="number" id="relief-tertiary" value="0" min="0" max="0" step="100"
+              class="w-28 pl-8 pr-2 py-2 border-2 border-slate-200 rounded-lg text-sm font-bold text-right"
+              oninput="capRelief(this, getTertiaryMax());recalc()" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Medical Expenses -->
+    <div class="card p-5 relief-item" data-key="medical">
+      <div class="flex flex-wrap items-start gap-3 justify-between">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-slate-800 text-sm">Medical Expenses</span>
+            <span class="cap-badge">Max RM 10,000</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Serious illness treatment, fertility, dental (specific), vaccination</p>
+        </div>
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <span class="saving-badge" id="saving-medical">Saves RM 0</span>
+          <div class="relative">
+            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-semibold">RM</span>
+            <input type="number" id="relief-medical" value="0" min="0" max="10000" step="100"
+              class="w-28 pl-8 pr-2 py-2 border-2 border-slate-200 rounded-lg text-sm font-bold text-right"
+              oninput="capRelief(this,10000);recalc()" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Parental Care — parents only -->
+    <div class="card p-5 relief-item parents-only hidden" data-key="parental">
+      <div class="flex flex-wrap items-start gap-3 justify-between">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-slate-800 text-sm">Parental Care Medical</span>
+            <span class="cap-badge">Max RM 8,000</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Medical expenses for parents — cannot be claimed by siblings simultaneously</p>
+        </div>
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <span class="saving-badge" id="saving-parental">Saves RM 0</span>
+          <div class="relative">
+            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-semibold">RM</span>
+            <input type="number" id="relief-parental" value="0" min="0" max="8000" step="100"
+              class="w-28 pl-8 pr-2 py-2 border-2 border-slate-200 rounded-lg text-sm font-bold text-right"
+              oninput="capRelief(this,8000);recalc()" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lifestyle -->
+    <div class="card p-5 relief-item" data-key="lifestyle">
+      <div class="flex flex-wrap items-start gap-3 justify-between">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-slate-800 text-sm">Lifestyle (Books, Gadgets, Broadband)</span>
+            <span class="cap-badge">Max RM 2,500</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Books, computers, smartphones, internet subscription</p>
+        </div>
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <span class="saving-badge" id="saving-lifestyle">Saves RM 0</span>
+          <div class="relative">
+            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-semibold">RM</span>
+            <input type="number" id="relief-lifestyle" value="0" min="0" max="2500" step="100"
+              class="w-28 pl-8 pr-2 py-2 border-2 border-slate-200 rounded-lg text-sm font-bold text-right"
+              oninput="capRelief(this,2500);recalc()" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sports Lifestyle -->
+    <div class="card p-5 relief-item" data-key="sports">
+      <div class="flex flex-wrap items-start gap-3 justify-between">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-slate-800 text-sm">Sports Lifestyle</span>
+            <span class="cap-badge">Max RM 1,000</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">Sports equipment, gym membership, competition entry fees</p>
+        </div>
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <span class="saving-badge" id="saving-sports">Saves RM 0</span>
+          <div class="relative">
+            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-semibond">RM</span>
+            <input type="number" id="relief-sports" value="0" min="0" max="1000" step="100"
+              class="w-28 pl-8 pr-2 py-2 border-2 border-slate-200 rounded-lg text-sm font-bold text-right"
+              oninput="capRelief(this,1000);recalc()" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Smart Home / EV -->
+    <div class="card p-5 relief-item" data-key="green">
+      <div class="flex flex-wrap items-start gap-3 justify-between">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-slate-800 text-sm">Smart Home / EV / Green Tech</span>
+            <span class="cap-badge">Max RM 2,500</span>
+          </div>
+          <p class="text-xs text-slate-400 mt-0.5">EV charging equipment, solar PV, smart home devices</p>
+        </div>
+        <div class="flex items-center gap-3 flex-shrink-0">
+          <span class="saving-badge" id="saving-green">Saves RM 0</span>
+          <div class="relative">
+            <span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-semibold">RM</span>
+            <input type="number" id="relief-green" value="0" min="0" max="2500" step="100"
+              class="w-28 pl-8 pr-2 py-2 border-2 border-slate-200 rounded-lg text-sm font-bold text-right"
+              oninput="capRelief(this,2500);recalc()" />
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Spacer for sticky footer -->
+  <div class="h-32"></div>
+
+  <!-- Sticky summary panel -->
+  <div class="sticky-panel">
+    <div class="max-w-6xl mx-auto flex flex-wrap gap-6 items-center justify-between">
+      <div class="flex flex-wrap gap-6">
+        <div>
+          <div class="text-xs uppercase tracking-wider" style="color:#7ea3c8;">Total Reliefs</div>
+          <div class="text-xl font-bold text-white" id="sticky-reliefs">RM 0</div>
+        </div>
+        <div>
+          <div class="text-xs uppercase tracking-wider" style="color:#7ea3c8;">Chargeable Income</div>
+          <div class="text-xl font-bold text-white" id="sticky-chargeable">RM 0</div>
+        </div>
+        <div>
+          <div class="text-xs uppercase tracking-wider" style="color:#7ea3c8;">Tax Saving from Reliefs</div>
+          <div class="text-xl font-bold" style="color:#fbbf24;" id="sticky-saving">RM 0</div>
+        </div>
+      </div>
+      <button onclick="showTab(2)" class="px-6 py-2.5 rounded-lg font-bold text-sm transition-all hover:scale-105"
+        style="background:#d97706;color:#fff;">
+        View Tax Summary →
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PAGE 3: TAX SUMMARY ===================== -->
+<div class="page" id="page-2">
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold" style="color:#1e3a5f;">Tax &amp; PCB Summary</h2>
+    <p class="text-sm text-slate-500 mt-1">Complete breakdown of your personal income tax and monthly PCB deductions.</p>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    <div class="stat-card card" style="border-top: 4px solid #1e3a5f;">
+      <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Gross Income</div>
+      <div class="text-2xl font-bold" style="color:#1e3a5f;" id="sum-gross">RM 0</div>
+    </div>
+    <div class="stat-card card" style="border-top: 4px solid #7ea3c8;">
+      <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Total Reliefs</div>
+      <div class="text-2xl font-bold text-blue-600" id="sum-reliefs">RM 0</div>
+    </div>
+    <div class="stat-card card" style="border-top: 4px solid #64748b;">
+      <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Chargeable Income</div>
+      <div class="text-2xl font-bold text-slate-700" id="sum-chargeable">RM 0</div>
+    </div>
+    <div class="stat-card card" style="border-top: 4px solid #d97706;">
+      <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Tax Due</div>
+      <div class="text-2xl font-bold" style="color:#d97706;" id="sum-tax">RM 0</div>
+    </div>
+  </div>
+
+  <!-- Rate Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+    <div class="card p-5 flex items-center gap-4">
+      <div class="w-14 h-14 rounded-xl flex items-center justify-center text-white font-black text-lg" style="background:#1e3a5f;">
+        <span id="marginal-rate-icon">26%</span>
+      </div>
+      <div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Marginal Rate (Top Bracket)</div>
+        <div class="text-2xl font-bold" style="color:#1e3a5f;" id="marginal-rate">26%</div>
+        <div class="text-xs text-slate-400 mt-0.5">Tax rate on additional ringgit earned</div>
+      </div>
+    </div>
+    <div class="card p-5 flex items-center gap-4">
+      <div class="w-14 h-14 rounded-xl flex items-center justify-center text-white font-black text-lg" style="background:#d97706;">
+        <span id="effective-rate-icon">0%</span>
+      </div>
+      <div>
+        <div class="text-xs font-semibold uppercase tracking-wider text-slate-400">Effective Rate (on Gross)</div>
+        <div class="text-2xl font-bold" style="color:#d97706;" id="effective-rate">0%</div>
+        <div class="text-xs text-slate-400 mt-0.5">Actual tax as % of gross income</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bracket Breakdown -->
+  <div class="card mb-6 overflow-hidden">
+    <div class="px-6 py-4" style="background:#f8fafc; border-bottom: 1px solid #e2e8f0;">
+      <h3 class="font-bold text-slate-800">Tax Bracket Breakdown</h3>
+      <p class="text-xs text-slate-500 mt-0.5">Amber row = your highest active bracket</p>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="data-table w-full">
+        <thead>
+          <tr>
+            <th class="text-left">Income Band</th>
+            <th class="text-center">Rate</th>
+            <th class="text-right">Taxable in Band</th>
+            <th class="text-right">Tax</th>
+          </tr>
+        </thead>
+        <tbody id="bracket-tbody">
+          <!-- populated by JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Monthly PCB Table -->
+  <div class="card overflow-hidden">
+    <div class="px-6 py-4" style="background:#f8fafc; border-bottom: 1px solid #e2e8f0;">
+      <h3 class="font-bold text-slate-800">Monthly PCB Schedule</h3>
+      <p class="text-xs text-slate-500 mt-0.5">Potongan Cukai Berjadual — monthly tax withholding by employer</p>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="data-table w-full">
+        <thead>
+          <tr>
+            <th class="text-left">Month</th>
+            <th class="text-right">Monthly Salary</th>
+            <th class="text-right">Monthly PCB</th>
+            <th class="text-right">Cumulative Withheld</th>
+          </tr>
+        </thead>
+        <tbody id="pcb-tbody">
+          <!-- populated by JS -->
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PAGE 4: CORPORATE OPTIMIZER ===================== -->
+<div class="page" id="page-3">
+  <div class="mb-6">
+    <h2 class="text-2xl font-bold" style="color:#1e3a5f;">Corporate Optimizer</h2>
+    <p class="text-sm text-slate-500 mt-1">Model salary vs. retained profit split to minimize total tax.</p>
+  </div>
+
+  <!-- Non-director notice -->
+  <div id="corp-locked" class="card p-10 text-center hidden">
+    <div class="text-5xl mb-4">🏢</div>
+    <h3 class="text-xl font-bold text-slate-700 mb-2">Sdn Bhd Director Module</h3>
+    <p class="text-slate-500 text-sm max-w-md mx-auto">This module is designed for Sdn Bhd directors and owners who control their salary and dividend structure. Go to <strong>Profile</strong> and select <em>"Sdn Bhd Director / Owner"</em> to unlock.</p>
+    <button onclick="showTab(0)" class="mt-6 px-6 py-2.5 rounded-lg font-bold text-sm text-white"
+      style="background:#1e3a5f;">← Back to Profile</button>
+  </div>
+
+  <!-- Corporate content -->
+  <div id="corp-content">
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+      <!-- Left controls (2 cols) -->
+      <div class="lg:col-span-2 space-y-5">
+
+        <!-- Salary Slider -->
+        <div class="card p-6">
+          <div class="section-header">Director Salary Drawn</div>
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-sm text-slate-500">Annual salary to self</span>
+            <span class="font-bold text-lg" style="color:#1e3a5f;" id="corp-salary-val">RM 115,000</span>
+          </div>
+          <input type="range" id="corp-salary-slider" min="0" max="450000" value="115000" step="1000"
+            class="w-full mb-3" oninput="updateCorpSalaryDisplay();recalc()" />
+          <div class="flex justify-between text-xs text-slate-400 mb-3">
+            <span>RM 0</span>
+            <span id="corp-slider-max">RM 450,000</span>
+          </div>
+          <div id="corp-bracket-zone" class="text-center">
+            <span class="zone-pill" style="background:#fef3c7;color:#92400e;">26% Bracket</span>
+          </div>
+        </div>
+
+        <!-- Employer EPF -->
+        <div class="card p-6">
+          <div class="section-header">Employer EPF Rate</div>
+          <div class="flex justify-between items-center mb-3">
+            <span class="text-sm text-slate-500">Company contribution (deductible)</span>
+            <span class="font-bold text-lg" style="color:#1e3a5f;" id="emp-epf-val">12%</span>
+          </div>
+          <input type="range" id="emp-epf-slider" min="12" max="19" value="12" step="1"
+            class="w-full mb-2" oninput="updateCorpEPFDisplay();recalc()" />
+          <div class="flex justify-between text-xs text-slate-400 mb-3">
+            <span>12% (min)</span>
+            <span>19%</span>
+          </div>
+          <div class="rounded-lg p-3 text-sm" style="background:#f0f4f9;">
+            <span class="text-slate-600">Extra EPF vs minimum: </span>
+            <span class="font-bold" style="color:#d97706;" id="extra-epf-val">RM 0</span>
+          </div>
+        </div>
+
+        <!-- Corporate Deductions -->
+        <div class="card p-6">
+          <div class="section-header">Corporate Deductions</div>
+          <div class="space-y-4">
+            <div>
+              <label class="flex items-center gap-2 cursor-pointer mb-2">
+                <input type="checkbox" id="corp-vehicle-chk" class="w-4 h-4 accent-navy-700" onchange="recalc()">
+                <span class="font-semibold text-sm text-slate-700">Company Vehicle</span>
+              </label>
+              <div class="relative pl-6">
+                <span class="absolute left-6 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-semibold">RM</span>
+                <input type="number" id="corp-vehicle-amt" value="0" min="0" step="1000"
+                  class="w-full pl-8 pr-3 py-2 border-2 border-slate-200 rounded-lg text-sm"
+                  placeholder="Annual cost" oninput="recalc()" />
+              </div>
+            </div>
+            <div>
+              <label class="flex items-center gap-2 cursor-pointer mb-2">
+                <input type="checkbox" id="corp-perq-chk" class="w-4 h-4 accent-navy-700" onchange="recalc()">
+                <span class="font-semibold text-sm text-slate-700">Perquisites (phones, laptops, internet)</span>
+              </label>
+              <div class="relative pl-6">
+                <span class="absolute left-6 top-1/2 -translate-y-1/2 text-xs text-slate-400 font-semibold">RM</span>
+                <input type="number" id="corp-perq-amt" value="0" min="0" step="500"
+                  class="w-full pl-8 pr-3 py-2 border-2 border-slate-200 rounded-lg text-sm"
+                  placeholder="Annual cost" oninput="recalc()" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right comparison table (3 cols) -->
+      <div class="lg:col-span-3 space-y-5">
+
+        <div class="card overflow-hidden">
+          <div class="overflow-x-auto">
+            <table class="comp-table w-full">
+              <thead>
+                <tr>
+                  <th class="text-left">Factor</th>
+                  <th class="text-right">Scenario A<br><span style="font-weight:400;font-size:0.72rem;color:#7ea3c8;">100% Salary</span></th>
+                  <th class="text-right">Scenario B<br><span style="font-weight:400;font-size:0.72rem;color:#fbbf24;">Optimized Split</span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td class="text-slate-600 text-sm">Gross Personal Salary</td>
+                  <td class="text-right font-semibold text-slate-800" id="ca-salary">RM 0</td>
+                  <td class="text-right font-semibold" style="color:#d97706;" id="cb-salary">RM 0</td>
+                </tr>
+                <tr>
+                  <td class="text-slate-600 text-sm">Total Reliefs</td>
+                  <td class="text-right font-semibold text-slate-800" id="ca-reliefs">RM 0</td>
+                  <td class="text-right font-semibold" style="color:#d97706;" id="cb-reliefs">RM 0</td>
+                </tr>
+                <tr>
+                  <td class="text-slate-600 text-sm">Chargeable Income</td>
+                  <td class="text-right font-semibold text-slate-800" id="ca-chargeable">RM 0</td>
+                  <td class="text-right font-semibold" style="color:#d97706;" id="cb-chargeable">RM 0</td>
+                </tr>
+                <tr class="subtotal-row">
+                  <td class="text-sm font-semibold">Personal Tax Due</td>
+                  <td class="text-right" id="ca-ptax">RM 0</td>
+                  <td class="text-right" id="cb-ptax">RM 0</td>
+                </tr>
+                <tr>
+                  <td class="text-slate-600 text-sm">Corporate Profit</td>
+                  <td class="text-right text-slate-400">—</td>
+                  <td class="text-right font-semibold" style="color:#d97706;" id="cb-corpprofit">RM 0</td>
+                </tr>
+                <tr>
+                  <td class="text-slate-600 text-sm">Employer EPF (deductible)</td>
+                  <td class="text-right text-slate-400">—</td>
+                  <td class="text-right font-semibold" style="color:#d97706;" id="cb-empepf">RM 0</td>
+                </tr>
+                <tr>
+                  <td class="text-slate-600 text-sm">Corporate Deductions</td>
+                  <td class="text-right text-slate-400">—</td>
+                  <td class="text-right font-semibold" style="color:#d97706;" id="cb-corpdeduct">RM 0</td>
+                </tr>
+                <tr class="subtotal-row">
+                  <td class="text-sm font-semibold">Corporate Tax</td>
+                  <td class="text-right text-slate-400">—</td>
+                  <td class="text-right" id="cb-corptax">RM 0</td>
+                </tr>
+                <tr class="highlight-row">
+                  <td class="text-sm font-bold">Total Tax</td>
+                  <td class="text-right" id="ca-totaltax">RM 0</td>
+                  <td class="text-right" id="cb-totaltax">RM 0</td>
+                </tr>
+                <tr class="highlight-row">
+                  <td class="text-sm font-bold">Net Cash Post-Tax</td>
+                  <td class="text-right" id="ca-netcash">RM 0</td>
+                  <td class="text-right" id="cb-netcash">RM 0</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Rate comparison -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="card p-4 text-center">
+            <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Pure Salary Rate</div>
+            <div class="text-2xl font-bold text-slate-700" id="corp-rate-a">0%</div>
+            <div class="text-xs text-slate-400">Effective rate (Scenario A)</div>
+          </div>
+          <div class="card p-4 text-center">
+            <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Combined Split Rate</div>
+            <div class="text-2xl font-bold" style="color:#d97706;" id="corp-rate-b">0%</div>
+            <div class="text-xs text-slate-400">Effective rate (Scenario B)</div>
+          </div>
+        </div>
+
+        <!-- Savings box -->
+        <div class="savings-box">
+          <div class="text-sm font-semibold uppercase tracking-wider mb-2" style="color:#7ea3c8;">Annual Tax Savings with Optimized Split</div>
+          <div class="text-5xl font-black mb-2" style="color:#fbbf24;" id="corp-savings">RM 0</div>
+          <div class="text-sm" style="color:#b3c9e1;" id="corp-savings-note">Switch from Scenario A to Scenario B</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+
+<!-- Footer Disclaimer -->
+<footer class="max-w-6xl mx-auto px-4 py-6 mt-4">
+  <div class="text-center text-xs text-slate-400">
+    <span style="color:#d97706; font-weight:600;">⚠ Disclaimer:</span>
+    Based on LHDN guidelines — for tax planning purposes only. Figures are estimates and may not reflect all individual circumstances, exemptions, or surcharges.
+    <strong>Always verify with a qualified tax professional or chartered accountant before filing.</strong>
+  </div>
+</footer>
+
+<script>
+// ===========================
+// TAX CALCULATION ENGINE
+// ===========================
+
+const PERSONAL_BRACKETS = [
+  { min: 0,       max: 5000,    rate: 0.00 },
+  { min: 5000,    max: 20000,   rate: 0.01 },
+  { min: 20000,   max: 35000,   rate: 0.03 },
+  { min: 35000,   max: 50000,   rate: 0.06 },
+  { min: 50000,   max: 70000,   rate: 0.11 },
+  { min: 70000,   max: 100000,  rate: 0.19 },
+  { min: 100000,  max: 400000,  rate: 0.25 },
+  { min: 400000,  max: Infinity, rate: 0.26 },
+];
+
+const BRACKET_NAMES = [
+  'RM 0 – 5,000', 'RM 5,001 – 20,000', 'RM 20,001 – 35,000',
+  'RM 35,001 – 50,000', 'RM 50,001 – 70,000', 'RM 70,001 – 100,000',
+  'RM 100,001 – 400,000', 'Above RM 400,000'
+];
+
+const CORPORATE_BRACKETS = [
+  { min: 0,       max: 150000,  rate: 0.15 },
+  { min: 150000,  max: 600000,  rate: 0.17 },
+  { min: 600000,  max: Infinity, rate: 0.24 },
+];
+
+function calcPersonalTax(chargeable) {
+  chargeable = Math.max(0, chargeable);
+  let tax = 0;
+  let detail = [];
+  let topRate = 0;
+  for (let i = 0; i < PERSONAL_BRACKETS.length; i++) {
+    const b = PERSONAL_BRACKETS[i];
+    if (chargeable <= b.min) { detail.push({ name: BRACKET_NAMES[i], rate: b.rate, taxable: 0, tax: 0, active: false }); continue; }
+    const taxable = Math.min(chargeable, b.max === Infinity ? chargeable : b.max) - b.min;
+    const bandTax = taxable * b.rate;
+    const active = chargeable > b.min;
+    if (active) topRate = b.rate;
+    detail.push({ name: BRACKET_NAMES[i], rate: b.rate, taxable, tax: bandTax, active });
+    tax += bandTax;
+  }
+  return { tax, topRate, detail };
+}
+
+function calcCorporateTax(profit) {
+  profit = Math.max(0, profit);
+  let tax = 0;
+  for (const b of CORPORATE_BRACKETS) {
+    if (profit <= b.min) continue;
+    const taxable = Math.min(profit, b.max === Infinity ? profit : b.max) - b.min;
+    tax += taxable * b.rate;
+  }
+  return tax;
+}
+
+function fmt(n) {
+  if (n < 0) return '−RM ' + Math.abs(Math.round(n)).toLocaleString('en-MY');
+  return 'RM ' + Math.round(n).toLocaleString('en-MY');
+}
+
+function pct(n, decimals = 1) {
+  return n.toFixed(decimals) + '%';
+}
+
+// ===========================
+// READ INPUTS
+// ===========================
+
+function getEPFRate() {
+  const sel = document.querySelector('input[name="epf-rate"]:checked');
+  if (!sel) return 0.11;
+  const val = sel.value;
+  if (val === 'custom') return (parseFloat(document.getElementById('epf-custom-val').value) || 0) / 100;
+  return parseFloat(val) / 100;
+}
+
+function getIncome() { return parseFloat(document.getElementById('p1-income').value) || 0; }
+function getChildren() { return parseInt(document.getElementById('p1-children').value) || 0; }
+function hasParents() { return document.getElementById('par-yes').checked; }
+function isDirector() { return document.getElementById('emp-director').checked; }
+
+function getTertiaryMax() { return getChildren() * 8000; }
+
+function getTotalReliefs() {
+  const keys = ['epf','life','prs','medins','sspn','childcare','tertiary','medical','parental','lifestyle','sports','green'];
+  let total = 0;
+  for (const k of keys) {
+    const el = document.getElementById('relief-' + k);
+    if (el) total += parseFloat(el.value) || 0;
+  }
+  return total;
+}
+
+// ===========================
+// MAIN RECALC
+// ===========================
+
+function recalc() {
+  const income = getIncome();
+  const epfRate = getEPFRate();
+  const epfAmt = Math.min(income * epfRate, 4000);
+
+  // Auto-update EPF relief if field hasn't been manually changed beyond auto-val
+  // (just silently set to min of computed and 4000)
+  const epfField = document.getElementById('relief-epf');
+  // Only update if it's at the rounded auto value (don't override user edits beyond bounds)
+  const autoEpf = Math.min(Math.round(epfAmt), 4000);
+  if (parseFloat(epfField.getAttribute('data-auto')) !== autoEpf) {
+    epfField.setAttribute('data-auto', autoEpf);
+    if (epfField.getAttribute('data-user-edited') !== 'true') {
+      epfField.value = autoEpf;
+    }
+  }
+
+  const totalReliefs = getTotalReliefs();
+  const chargeable = Math.max(0, income - totalReliefs);
+  const { tax, topRate, detail } = calcPersonalTax(chargeable);
+  const effectiveRate = income > 0 ? (tax / income * 100) : 0;
+  const monthlyPCB = tax / 12;
+  const monthlySalary = income / 12;
+
+  // Saving at marginal rate (using top bracket rate for each relief display)
+  const marginalRate = topRate;
+  updateReliefSavings(marginalRate);
+
+  // Header
+  document.getElementById('header-tax').textContent = fmt(tax);
+
+  // Page 1 quick stats
+  document.getElementById('p1-monthly').textContent = fmt(monthlySalary);
+  document.getElementById('p1-epf').textContent = fmt(Math.min(income * epfRate, 4000));
+  document.getElementById('p1-bracket').textContent = pct(topRate * 100, 0);
+
+  // Page 2 sticky panel
+  document.getElementById('sticky-reliefs').textContent = fmt(totalReliefs);
+  document.getElementById('sticky-chargeable').textContent = fmt(chargeable);
+  // Tax saving = difference in tax with vs without reliefs
+  const taxWithoutReliefs = calcPersonalTax(income).tax;
+  document.getElementById('sticky-saving').textContent = fmt(taxWithoutReliefs - tax);
+
+  // Page 3 summary cards
+  document.getElementById('sum-gross').textContent = fmt(income);
+  document.getElementById('sum-reliefs').textContent = fmt(totalReliefs);
+  document.getElementById('sum-chargeable').textContent = fmt(chargeable);
+  document.getElementById('sum-tax').textContent = fmt(tax);
+
+  // Rate cards
+  const marginalPct = pct(topRate * 100, 0);
+  document.getElementById('marginal-rate').textContent = marginalPct;
+  document.getElementById('marginal-rate-icon').textContent = marginalPct;
+  const effPct = pct(effectiveRate);
+  document.getElementById('effective-rate').textContent = effPct;
+  document.getElementById('effective-rate-icon').textContent = pct(effectiveRate, 0);
+
+  // Bracket table
+  renderBracketTable(detail, chargeable, tax);
+
+  // PCB table
+  renderPCBTable(monthlyPCB, monthlySalary, tax);
+
+  // Corporate optimizer
+  updateCorporateOptimizer(income, totalReliefs, chargeable, tax);
+
+  // Corp slider max
+  document.getElementById('corp-salary-slider').max = income;
+  document.getElementById('corp-slider-max').textContent = fmt(income);
+}
+
+function updateReliefSavings(marginalRate) {
+  const keys = ['epf','life','prs','medins','sspn','childcare','tertiary','medical','parental','lifestyle','sports','green'];
+  for (const k of keys) {
+    const el = document.getElementById('relief-' + k);
+    const saveEl = document.getElementById('saving-' + k);
+    if (el && saveEl) {
+      const val = parseFloat(el.value) || 0;
+      const saving = val * marginalRate;
+      saveEl.textContent = 'Saves ' + fmt(saving);
+    }
+  }
+}
+
+function renderBracketTable(detail, chargeable, totalTax) {
+  const tbody = document.getElementById('bracket-tbody');
+  const BRACKET_MAX_LABELS = ['5,000','20,000','35,000','50,000','70,000','100,000','400,000','—'];
+  let html = '';
+  let lastActive = -1;
+  for (let i = 0; i < detail.length; i++) {
+    if (detail[i].active && detail[i].taxable > 0) lastActive = i;
+  }
+  for (let i = 0; i < detail.length; i++) {
+    const d = detail[i];
+    if (!d.active && d.taxable === 0 && chargeable <= PERSONAL_BRACKETS[i].min) {
+      // skip fully irrelevant brackets beyond income
+      if (i > lastActive + 1) continue;
+    }
+    const isTop = i === lastActive;
+    const rowClass = isTop ? 'active-bracket' : (d.taxable === 0 ? 'opacity-50' : '');
+    html += `<tr class="${rowClass}">
+      <td>${d.name}</td>
+      <td class="text-center">${pct(d.rate * 100, 0)}</td>
+      <td class="text-right">${d.taxable > 0 ? fmt(d.taxable) : '—'}</td>
+      <td class="text-right font-semibold">${d.tax > 0 ? fmt(d.tax) : '—'}</td>
+    </tr>`;
+  }
+  html += `<tr class="total-row">
+    <td colspan="2">Total Tax Due</td>
+    <td class="text-right">${fmt(chargeable)}</td>
+    <td class="text-right">${fmt(totalTax)}</td>
+  </tr>`;
+  tbody.innerHTML = html;
+}
+
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+
+function renderPCBTable(monthlyPCB, monthlySalary, annualTax) {
+  const tbody = document.getElementById('pcb-tbody');
+  let html = '';
+  let cumulative = 0;
+  for (let i = 0; i < 12; i++) {
+    cumulative += monthlyPCB;
+    html += `<tr>
+      <td>${MONTHS[i]}</td>
+      <td class="text-right">${fmt(monthlySalary)}</td>
+      <td class="text-right font-semibold" style="color:#d97706;">${fmt(monthlyPCB)}</td>
+      <td class="text-right">${fmt(cumulative)}</td>
+    </tr>`;
+  }
+  html += `<tr class="total-row">
+    <td><strong>Annual Total</strong></td>
+    <td class="text-right"><strong>${fmt(monthlySalary * 12)}</strong></td>
+    <td class="text-right" style="color:#d97706;"><strong>${fmt(annualTax)}</strong></td>
+    <td class="text-right"><strong>${fmt(annualTax)}</strong></td>
+  </tr>`;
+  tbody.innerHTML = html;
+}
+
+function updateCorporateOptimizer(income, totalReliefs, chargeableA, taxA) {
+  // Show/hide
+  const locked = document.getElementById('corp-locked');
+  const content = document.getElementById('corp-content');
+  if (!isDirector()) {
+    locked.classList.remove('hidden');
+    content.classList.add('hidden');
+    return;
+  }
+  locked.classList.add('hidden');
+  content.classList.remove('hidden');
+
+  const corpSalary = parseFloat(document.getElementById('corp-salary-slider').value) || 0;
+  const empEPFRate = (parseFloat(document.getElementById('emp-epf-slider').value) || 12) / 100;
+  const vehicleChk = document.getElementById('corp-vehicle-chk').checked;
+  const vehicleAmt = vehicleChk ? (parseFloat(document.getElementById('corp-vehicle-amt').value) || 0) : 0;
+  const perqChk = document.getElementById('corp-perq-chk').checked;
+  const perqAmt = perqChk ? (parseFloat(document.getElementById('corp-perq-amt').value) || 0) : 0;
+
+  // Employer EPF on corp salary
+  const empEPFAmt = corpSalary * empEPFRate;
+  const extraEPF = corpSalary * (empEPFRate - 0.12);
+
+  document.getElementById('extra-epf-val').textContent = fmt(extraEPF);
+
+  // Bracket zone for corp salary
+  const zoneEl = document.getElementById('corp-bracket-zone');
+  const { topRate: corpTopRate } = calcPersonalTax(Math.max(0, corpSalary - totalReliefs));
+  const ZONE_COLORS = {
+    0:   { bg:'#f0f4f9', text:'#475569', label:'0% Bracket' },
+    0.01:{ bg:'#dbeafe', text:'#1e40af', label:'1% Bracket' },
+    0.03:{ bg:'#d1fae5', text:'#065f46', label:'3% Bracket' },
+    0.06:{ bg:'#ecfdf5', text:'#047857', label:'6% Bracket' },
+    0.11:{ bg:'#fef9c3', text:'#854d0e', label:'11% Bracket' },
+    0.19:{ bg:'#ffedd5', text:'#9a3412', label:'19% Bracket' },
+    0.25:{ bg:'#fee2e2', text:'#991b1b', label:'25% Bracket' },
+    0.26:{ bg:'#fecaca', text:'#7f1d1d', label:'26% Bracket' },
+  };
+  const zone = ZONE_COLORS[corpTopRate] || ZONE_COLORS[0];
+  zoneEl.innerHTML = `<span class="zone-pill" style="background:${zone.bg};color:${zone.text};">${zone.label}</span>`;
+
+  // Scenario A — pure salary
+  const ca_chargeable = chargeableA;
+  const ca_tax = taxA;
+  const ca_netcash = income - ca_tax;
+
+  // Scenario B — split
+  const chargeableB = Math.max(0, corpSalary - totalReliefs);
+  const { tax: personalTaxB } = calcPersonalTax(chargeableB);
+
+  // Corporate profit = income - salary drawn - employer EPF - corp deductions
+  const corpProfit = Math.max(0, income - corpSalary - empEPFAmt - vehicleAmt - perqAmt);
+  const corpTax = calcCorporateTax(corpProfit);
+  const cb_totalTax = personalTaxB + corpTax;
+  const cb_netcash = income - cb_totalTax;
+
+  const savings = ca_tax - cb_totalTax;
+
+  // Scenario A fill
+  document.getElementById('ca-salary').textContent = fmt(income);
+  document.getElementById('ca-reliefs').textContent = fmt(totalReliefs);
+  document.getElementById('ca-chargeable').textContent = fmt(ca_chargeable);
+  document.getElementById('ca-ptax').textContent = fmt(ca_tax);
+  document.getElementById('ca-totaltax').textContent = fmt(ca_tax);
+  document.getElementById('ca-netcash').textContent = fmt(ca_netcash);
+
+  // Scenario B fill
+  document.getElementById('cb-salary').textContent = fmt(corpSalary);
+  document.getElementById('cb-reliefs').textContent = fmt(totalReliefs);
+  document.getElementById('cb-chargeable').textContent = fmt(chargeableB);
+  document.getElementById('cb-ptax').textContent = fmt(personalTaxB);
+  document.getElementById('cb-corpprofit').textContent = fmt(corpProfit);
+  document.getElementById('cb-empepf').textContent = fmt(empEPFAmt);
+  document.getElementById('cb-corpdeduct').textContent = fmt(vehicleAmt + perqAmt);
+  document.getElementById('cb-corptax').textContent = fmt(corpTax);
+  document.getElementById('cb-totaltax').textContent = fmt(cb_totalTax);
+  document.getElementById('cb-netcash').textContent = fmt(cb_netcash);
+
+  // Rate comparison
+  document.getElementById('corp-rate-a').textContent = income > 0 ? pct(ca_tax / income * 100) : '0%';
+  document.getElementById('corp-rate-b').textContent = income > 0 ? pct(cb_totalTax / income * 100) : '0%';
+
+  // Savings box
+  document.getElementById('corp-savings').textContent = fmt(Math.abs(savings));
+  document.getElementById('corp-savings-note').textContent = savings > 0
+    ? `Scenario B saves ${fmt(savings)} vs pure salary approach`
+    : savings < 0
+    ? `Scenario A is better by ${fmt(Math.abs(savings))} — adjust salary slider`
+    : 'Scenarios are equivalent at this split';
+}
+
+// ===========================
+// UI HELPERS
+// ===========================
+
+function capRelief(input, max) {
+  let val = parseFloat(input.value) || 0;
+  if (val > max) { input.value = max; val = max; }
+  if (val < 0) { input.value = 0; }
+  input.setAttribute('data-user-edited', 'true');
+}
+
+function updateRadioStyles(name) {
+  const inputs = document.querySelectorAll(`input[name="${name}"]`);
+  inputs.forEach(inp => {
+    const label = inp.closest('label');
+    if (label) {
+      if (inp.checked) label.classList.add('selected');
+      else label.classList.remove('selected');
+    }
+  });
+}
+
+function updateChildrenUI() {
+  const n = getChildren();
+  const items = document.querySelectorAll('.children-only');
+  items.forEach(el => {
+    if (n > 0) el.classList.remove('hidden');
+    else el.classList.add('hidden');
+  });
+  // Update tertiary cap
+  const tertiaryMax = n * 8000;
+  document.getElementById('tertiary-cap-badge').textContent = `Max RM ${tertiaryMax.toLocaleString('en-MY')}`;
+  const tertiaryInput = document.getElementById('relief-tertiary');
+  tertiaryInput.max = tertiaryMax;
+  if ((parseFloat(tertiaryInput.value) || 0) > tertiaryMax) tertiaryInput.value = tertiaryMax;
+}
+
+function updateParentsUI() {
+  const items = document.querySelectorAll('.parents-only');
+  items.forEach(el => {
+    if (hasParents()) el.classList.remove('hidden');
+    else el.classList.add('hidden');
+  });
+}
+
+function updateCorpSalaryDisplay() {
+  const val = parseFloat(document.getElementById('corp-salary-slider').value) || 0;
+  document.getElementById('corp-salary-val').textContent = fmt(val);
+}
+
+function updateCorpEPFDisplay() {
+  const val = parseFloat(document.getElementById('emp-epf-slider').value) || 12;
+  document.getElementById('emp-epf-val').textContent = val + '%';
+}
+
+// ===========================
+// TAB NAVIGATION
+// ===========================
+
+function showTab(idx) {
+  for (let i = 0; i < 4; i++) {
+    document.getElementById('page-' + i).classList.toggle('active', i === idx);
+    const btn = document.getElementById('tab-' + i);
+    btn.classList.toggle('active', i === idx);
+    if (i !== idx) btn.style.color = '#475569';
+    else btn.style.color = '';
+  }
+  recalc();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ===========================
+// INIT
+// ===========================
+
+// Mark EPF field as auto initially
+document.addEventListener('DOMContentLoaded', function() {
+  const epfField = document.getElementById('relief-epf');
+  epfField.addEventListener('input', function() {
+    this.setAttribute('data-user-edited', 'true');
+  });
+  recalc();
+  updateChildrenUI();
+  updateParentsUI();
+  updateCorpSalaryDisplay();
+  updateCorpEPFDisplay();
+});
+
+// Also run recalc immediately (in case DOMContentLoaded already fired)
+setTimeout(() => {
+  recalc();
+  updateChildrenUI();
+  updateParentsUI();
+}, 100);
+</script>
+</body>
+</html>
