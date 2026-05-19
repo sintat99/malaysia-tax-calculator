@@ -632,6 +632,58 @@ html.dark .data-table tr:not(.active-bracket):not(.total-row):hover td { backgro
 
   </div>
 
+  <!-- Property & Education -->
+  <div class="section-header mt-6">Property &amp; Education</div>
+  <div class="space-y-3">
+
+    <!-- Housing Loan Interest -->
+    <div class="card p-5 card-accent">
+      <div class="flex flex-wrap items-start gap-3 justify-between">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-sm">Housing Loan Interest</span>
+            <span class="cap-badge" id="housing-cap-badge">Max RM 7,000</span>
+            <span class="zone-pill" style="background:#dcfce7;color:#166534;font-size:.68rem;">NEW YA 2025–2026</span>
+          </div>
+          <p class="text-xs mt-0.5" style="color:var(--txt3);">Interest on 1st residential property. SPA signed 1 Jan 2025 – 31 Dec 2027. Max 3 consecutive YAs.</p>
+          <div class="mt-2 flex items-center gap-2 flex-wrap">
+            <label class="text-xs font-semibold" style="color:var(--txt2);">Property price:</label>
+            <select id="housing-tier" class="border rounded px-2 py-1 text-xs font-semibold" onchange="updateHousingCap();recalc()" style="background:var(--card);color:var(--txt);border-color:var(--border);">
+              <option value="7000">≤ RM 500,000 (max RM 7,000)</option>
+              <option value="5000">RM 500,001 – RM 750,000 (max RM 5,000)</option>
+              <option value="0">Above RM 750,000 (not eligible)</option>
+            </select>
+          </div>
+          <div class="progress-track"><div class="progress-fill" id="prog-housing" style="width:0%"></div></div>
+          <div class="text-xs mt-1" style="color:var(--txt3);" id="prog-housing-txt">RM 0 / RM 7,000</div>
+        </div>
+        <div class="flex items-center gap-3 shrink-0">
+          <span class="saving-badge" id="saving-housing">Saves RM 0</span>
+          <div class="relative"><span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-semibold" style="color:var(--txt3);">RM</span>
+            <input type="number" id="relief-housing" value="0" min="0" max="7000" step="100" class="w-28 pl-8 pr-2 py-2 border-2 rounded-lg text-sm font-bold text-right" oninput="capRelief(this,housingCap());recalc()" /></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Education Fees (Self) -->
+    <div class="card p-5">
+      <div class="flex flex-wrap items-start gap-3 justify-between">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap"><span class="font-semibold text-sm">Education Fees (Self)</span><span class="cap-badge">Max RM 7,000</span></div>
+          <p class="text-xs mt-0.5" style="color:var(--txt3);">Fees for diploma, degree or masters at recognised institutions. Skills &amp; vocational training included.</p>
+          <div class="progress-track"><div class="progress-fill" id="prog-education" style="width:0%"></div></div>
+          <div class="text-xs mt-1" style="color:var(--txt3);" id="prog-education-txt">RM 0 / RM 7,000</div>
+        </div>
+        <div class="flex items-center gap-3 shrink-0">
+          <span class="saving-badge" id="saving-education">Saves RM 0</span>
+          <div class="relative"><span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-semibold" style="color:var(--txt3);">RM</span>
+            <input type="number" id="relief-education" value="0" min="0" max="7000" step="100" class="w-28 pl-8 pr-2 py-2 border-2 rounded-lg text-sm font-bold text-right" oninput="capRelief(this,7000);recalc()" /></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
   <!-- Lifestyle -->
   <div class="section-header mt-6">Lifestyle &amp; Green Tech</div>
   <div class="space-y-3">
@@ -664,6 +716,27 @@ html.dark .data-table tr:not(.active-bracket):not(.total-row):hover td { backgro
           <span class="saving-badge" id="saving-sports">Saves RM 0</span>
           <div class="relative"><span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-semibold" style="color:var(--txt3);">RM</span>
             <input type="number" id="relief-sports" value="0" min="0" max="1000" step="100" class="w-28 pl-8 pr-2 py-2 border-2 rounded-lg text-sm font-bold text-right" oninput="capRelief(this,1000);recalc()" /></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Domestic Tourism -->
+    <div class="card p-5">
+      <div class="flex flex-wrap items-start gap-3 justify-between">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-2 flex-wrap">
+            <span class="font-semibold text-sm">Domestic Tourism</span>
+            <span class="cap-badge">Max RM 1,000</span>
+            <span class="zone-pill" style="background:#dcfce7;color:#166534;font-size:.68rem;">YA 2026 only</span>
+          </div>
+          <p class="text-xs mt-0.5" style="color:var(--txt3);">Entrance fees to tourist attractions, cultural &amp; arts programmes in Malaysia.</p>
+          <div class="progress-track"><div class="progress-fill" id="prog-tourism" style="width:0%"></div></div>
+          <div class="text-xs mt-1" style="color:var(--txt3);" id="prog-tourism-txt">RM 0 / RM 1,000</div>
+        </div>
+        <div class="flex items-center gap-3 shrink-0">
+          <span class="saving-badge" id="saving-tourism">Saves RM 0</span>
+          <div class="relative"><span class="absolute left-2 top-1/2 -translate-y-1/2 text-xs font-semibold" style="color:var(--txt3);">RM</span>
+            <input type="number" id="relief-tourism" value="0" min="0" max="1000" step="100" class="w-28 pl-8 pr-2 py-2 border-2 rounded-lg text-sm font-bold text-right" oninput="capRelief(this,1000);recalc()" /></div>
         </div>
       </div>
     </div>
@@ -1026,8 +1099,15 @@ function getTertiaryMax(){ return getChildren()*8000; }
 
 function getRelief(key){ return parseFloat(el('relief-'+key)?.value)||0; }
 
+function housingCap(){ return parseInt(el('housing-tier')?.value)||7000; }
+function updateHousingCap(){
+  const cap=housingCap();
+  const badge=el('housing-cap-badge'); if(badge) badge.textContent=cap>0?`Max RM ${cap.toLocaleString('en-MY')}`:'Not eligible';
+  const inp=el('relief-housing'); if(inp){ inp.max=cap; if(cap===0)inp.value=0; else if((parseFloat(inp.value)||0)>cap)inp.value=cap; }
+  const progTxt=el('prog-housing-txt'); if(progTxt) progTxt.textContent=`RM 0 / RM ${cap.toLocaleString('en-MY')}`;
+}
 function getTotalReliefs(){
-  const keys=['epf','life','prs','medins','sspn','childcare','tertiary','medical','parental','lifestyle','sports','green','spouse'];
+  const keys=['epf','life','prs','medins','sspn','childcare','tertiary','medical','parental','lifestyle','sports','green','spouse','housing','tourism','education'];
   let t=keys.reduce((s,k)=>s+getRelief(k),0);
   if(el('relief-disabled-self-chk')?.checked) t+=6000;
   if(el('relief-disabled-spouse-chk')?.checked && isMarried()) t+=3500;
@@ -1170,7 +1250,7 @@ function recalc(){
 // ══════════════════════════════════════
 // RELIEF UI (badges + progress bars)
 // ══════════════════════════════════════
-const RELIEF_CAPS = {epf:4000,life:3000,prs:3000,medins:4000,sspn:8000,childcare:3000,medical:10000,parental:8000,lifestyle:2500,sports:1000,green:2500,spouse:4000};
+const RELIEF_CAPS = {epf:4000,life:3000,prs:3000,medins:4000,sspn:8000,childcare:3000,medical:10000,parental:8000,lifestyle:2500,sports:1000,green:2500,spouse:4000,tourism:1000,education:7000};
 
 function updateReliefUI(marginalRate){
   for(const [k,cap] of Object.entries(RELIEF_CAPS)){
@@ -1181,6 +1261,11 @@ function updateReliefUI(marginalRate){
     if(pf) pf.style.width=Math.min(100,(val/cap)*100)+'%';
     setText('prog-'+k+'-txt',`${fmt(val)} / ${fmt(cap)}`);
   }
+  // Housing (dynamic cap)
+  const hcap=housingCap(); const hval=getRelief('housing');
+  setText('saving-housing','Saves '+fmt(hval*marginalRate));
+  const ph=el('prog-housing'); if(ph) ph.style.width=(hcap>0?Math.min(100,(hval/hcap)*100):0)+'%';
+  setText('prog-housing-txt',`${fmt(hval)} / ${fmt(hcap)}`);
   // Tertiary
   const tm=getTertiaryMax();
   const tv=getRelief('tertiary');
@@ -1413,6 +1498,7 @@ function maximizeReliefs(){
   setR('relief-tertiary',getTertiaryMax()); setR('relief-medical',10000);
   setR('relief-parental',8000); setR('relief-lifestyle',2500); setR('relief-sports',1000);
   setR('relief-green',2500); setR('relief-spouse',isMarried()?4000:0);
+  setR('relief-housing',housingCap()); setR('relief-tourism',1000); setR('relief-education',7000);
   recalc();
 }
 
@@ -1493,7 +1579,8 @@ function getStateObj(){
     ch:el('p1-children')?.value, dch:el('p1-disabled-children')?.value,
     par:document.querySelector('input[name="parents"]:checked')?.value,
     epf:el('p1-epf-rate')?.value, epfc:v('epf-custom-val'),
-    re:['epf','life','prs','medins','sspn','childcare','tertiary','medical','parental','lifestyle','sports','green','spouse'].map(k=>v('relief-'+k)).join(','),
+    re:['epf','life','prs','medins','sspn','childcare','tertiary','medical','parental','lifestyle','sports','green','spouse','housing','tourism','education'].map(k=>v('relief-'+k)).join(','),
+    htier:el('housing-tier')?.value,
     dself:el('relief-disabled-self-chk')?.checked?1:0,
     dsp:el('relief-disabled-spouse-chk')?.checked?1:0,
     zakat:v('rebate-zakat'),
@@ -1520,7 +1607,8 @@ function loadState(s){
   if(s.par) document.querySelectorAll('input[name="parents"]').forEach(i=>i.checked=i.value===s.par);
   if(s.epf&&el('p1-epf-rate')){ el('p1-epf-rate').value=s.epf; toggleCustomEPF(); }
   setV('epf-custom-val',s.epfc); setV('p1-children',s.ch); setV('p1-disabled-children',s.dch);
-  if(s.re){ const vals=s.re.split(','); ['epf','life','prs','medins','sspn','childcare','tertiary','medical','parental','lifestyle','sports','green','spouse'].forEach((k,i)=>setV('relief-'+k,vals[i])); }
+  if(s.re){ const vals=s.re.split(','); ['epf','life','prs','medins','sspn','childcare','tertiary','medical','parental','lifestyle','sports','green','spouse','housing','tourism','education'].forEach((k,i)=>setV('relief-'+k,vals[i])); }
+  if(s.htier&&el('housing-tier')){ el('housing-tier').value=s.htier; updateHousingCap(); }
   if(el('relief-disabled-self-chk')) el('relief-disabled-self-chk').checked=s.dself=='1'||s.dself===1;
   if(el('relief-disabled-spouse-chk')) el('relief-disabled-spouse-chk').checked=s.dsp=='1'||s.dsp===1;
   setV('rebate-zakat',s.zakat);
