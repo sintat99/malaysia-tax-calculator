@@ -184,10 +184,19 @@ html.dark .data-table tr:not(.active-bracket):not(.total-row):hover td { backgro
           </div>
         </div>
 
-        <!-- Monthly salary -->
+        <!-- Salary input with Monthly/Yearly toggle -->
         <div class="mb-4">
           <div class="flex items-center justify-between mb-1">
-            <label class="text-sm font-semibold">Monthly gross salary</label>
+            <div class="flex items-center gap-2">
+              <label class="text-sm font-semibold" id="salary-label">Monthly gross salary</label>
+              <!-- Toggle -->
+              <div class="flex rounded-lg overflow-hidden border-2 text-xs font-semibold" style="border-color:var(--navy);">
+                <button type="button" id="toggle-monthly" onclick="setSalaryMode('monthly')"
+                  class="px-3 py-1 transition" style="background:var(--navy);color:#fff;">Monthly</button>
+                <button type="button" id="toggle-yearly" onclick="setSalaryMode('yearly')"
+                  class="px-3 py-1 transition" style="background:var(--card);color:var(--navy);">Yearly</button>
+              </div>
+            </div>
             <button type="button" onclick="toggleInfo('info-monthly')" class="text-xs underline" style="color:var(--navy);">ⓘ what is this / where to get it</button>
           </div>
           <div class="relative">
@@ -195,9 +204,9 @@ html.dark .data-table tr:not(.active-bracket):not(.total-row):hover td { backgro
             <input type="number" id="p1-monthly-salary" value="37500" min="0" max="999999" step="500"
               class="w-full pl-10 pr-4 py-3 border-2 rounded-lg text-lg font-bold" oninput="recalc()" />
           </div>
-          <p class="text-xs mt-1" style="color:var(--txt3);">Before EPF/SOCSO/EIS/PCB deductions. Annual = monthly × 12.</p>
+          <p class="text-xs mt-1" id="salary-hint" style="color:var(--txt3);">Before EPF/SOCSO/EIS/PCB deductions. Annual = monthly × 12.</p>
           <div id="info-monthly" class="hidden mt-2 p-3 rounded-lg text-xs" style="background:var(--navy-l);color:var(--txt2);">
-            <strong>Where to find it:</strong> Your monthly payslip (gross salary before deductions). For directors, this is the salary drawn from the company. Do <em>not</em> include bonuses here — enter them separately below.
+            <strong>Where to find it:</strong> Your payslip gross salary before deductions. Do <em>not</em> include bonuses — enter them separately below.
           </div>
         </div>
 
@@ -1074,13 +1083,38 @@ function v(id){ return parseFloat(document.getElementById(id)?.value)||0; }
 function el(id){ return document.getElementById(id); }
 function setText(id,t){ const e=el(id); if(e) e.textContent=t; }
 
+let _salaryMode = 'monthly'; // 'monthly' | 'yearly'
+function setSalaryMode(mode){
+  _salaryMode = mode;
+  const inp = el('p1-monthly-salary');
+  const cur = parseFloat(inp?.value)||0;
+  if(mode === 'yearly'){
+    if(inp) inp.step = 1000;
+    if(cur > 0 && cur < 50000) inp.value = Math.round(cur * 12); // convert monthly → annual
+    el('salary-label').textContent = 'Annual gross salary';
+    el('salary-hint').textContent = 'Total salary for the full year before any deductions.';
+    el('toggle-monthly').style.background = 'var(--card)'; el('toggle-monthly').style.color = 'var(--navy)';
+    el('toggle-yearly').style.background = 'var(--navy)'; el('toggle-yearly').style.color = '#fff';
+  } else {
+    if(inp) inp.step = 500;
+    const annual = parseFloat(inp?.value)||0;
+    if(annual > 50000) inp.value = Math.round(annual / 12); // convert annual → monthly
+    el('salary-label').textContent = 'Monthly gross salary';
+    el('salary-hint').textContent = 'Before EPF/SOCSO/EIS/PCB deductions. Annual = monthly × 12.';
+    el('toggle-monthly').style.background = 'var(--navy)'; el('toggle-monthly').style.color = '#fff';
+    el('toggle-yearly').style.background = 'var(--card)'; el('toggle-yearly').style.color = 'var(--navy)';
+  }
+  recalc();
+}
 function getEPFRate(){
   const sel=el('p1-epf-rate');
   if(!sel) return 0.11;
   return sel.value==='custom'?(v('epf-custom-val')/100):(parseFloat(sel.value)/100);
 }
 function getIncome(){
-  return (v('p1-monthly-salary')||0)*12 + (v('p1-bonus')||0) + (v('p1-other-income')||0);
+  const sal = v('p1-monthly-salary')||0;
+  const annualSal = _salaryMode === 'yearly' ? sal : sal * 12;
+  return annualSal + (v('p1-bonus')||0) + (v('p1-other-income')||0);
 }
 function toggleInfo(id){
   const e=el(id); if(e) e.classList.toggle('hidden');
@@ -1133,7 +1167,8 @@ let _charts = {donut:null, bar:null};
 function recalc(){
   const income=getIncome();
   const epfRate=getEPFRate();
-  const monthlySalary=v('p1-monthly-salary')||0;
+  const salInput=v('p1-monthly-salary')||0;
+  const monthlySalary=_salaryMode==='yearly'?salInput/12:salInput;
   const autoEPF=Math.min(Math.round(monthlySalary*12*epfRate),4000);
   const epfFld=el('relief-epf');
   if(epfFld && epfFld.getAttribute('data-auto')!==String(autoEPF)){
