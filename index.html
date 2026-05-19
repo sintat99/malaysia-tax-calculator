@@ -130,7 +130,7 @@ html.dark .data-table tr:not(.active-bracket):not(.total-row):hover td { backgro
       <div style="background:#d97706;" class="w-9 h-9 rounded-lg flex items-center justify-center text-white font-black text-sm shrink-0">MY</div>
       <div>
         <h1 class="text-xl font-bold tracking-tight">Malaysia Tax Optimizer</h1>
-        <p class="text-xs" style="color:#7ea3c8;">Personal &amp; Corporate Tax Planning · <span id="ya-label">YA 2025</span></p>
+        <p class="text-xs" style="color:#7ea3c8;">Personal &amp; Corporate Tax Planning · <span id="ya-label">YA 2026</span></p>
       </div>
     </div>
     <div class="flex items-center gap-3">
@@ -1173,7 +1173,7 @@ function recalc(){
 
   // Header
   setText('header-tax',fmt(finalTax));
-  setText('ya-label','YA '+(el('p1-ya')?.value||'2025'));
+  setText('ya-label','YA '+(el('p1-ya')?.value||'2026'));
 
   // Page 1 — bottom line
   const annualEPF=income*epfRate;
